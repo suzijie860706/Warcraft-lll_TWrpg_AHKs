@@ -1,6 +1,12 @@
-#Requires AutoHotkey v2.0
+﻿#Requires AutoHotkey v2.0
 #Include wc3rpgTool.ahk
 #Include Helper.ahk
+
+; 全域判斷：目標視窗處於焦點、輔助總開關已啟用、且「非聊天打字中」
+CanRemapActive(win) {
+    global toolEnabled, chatting
+    return WinActive(win) && toolEnabled && !chatting
+}
 
 class RegisterHotkey {
     key := ""
@@ -24,18 +30,16 @@ class RegisterHotkey {
             return
         }
 
-        HotIfWinactive(this.targetWindow)
-        if !toolEnabled || !this.enable {
+        HotIf((*) => CanRemapActive(this.targetWindow))
+        if !this.enable {
             try {
-                Hotkey(this.key, hotkeyFunction, "Off")
+                Hotkey(this.key, "Off")
             }
         } else {
-            Hotkey(this.key, hotkeyFunction, "On")
+            try {
+                Hotkey(this.key, (*) => this.function.Call(), "On")
+            }
         }
-        HotIfWinactive()
-
-        hotkeyFunction(thisHotkey) {
-            this.function.Call()
-        }
+        HotIf()
     }
 }

@@ -1,87 +1,55 @@
-#Requires AutoHotkey v2.0
+﻿#Requires AutoHotkey v2.0
 #Include wc3rpgTool.ahk
 
 class Settings {
     tabName := "SettingsTab"
-    hotkeys := [Gui.Text]
     checkboxes := [Gui.CheckBox]
 
     __New(MainGui, Tab) {
-        ; init tab
-        Tab.UseTab("Settings")
+        ; 綁定第 5 分頁（設定）
+        Tab.UseTab(5)
 
-        ; enable tool at start
-        enableToolonStartCheckbox := MainGui.AddCheckbox("xs y+20 Section venableToolonStartCheckbox -TabStop", "Enable Tool at Start")
+        ; GroupBox 常用功能開關
+        MainGui.AddGroupBox("Section w550 h240", "功能偏好設定 (Preferences)")
 
-        ; enable tool after load
-        enableToolAfterLoadCheckbox := MainGui.AddCheckbox("xs y+20 Section venableToolAfterLoad -TabStop", "Enable Tool After Loading Savefile")
+        enableToolonStartCheckbox := MainGui.AddCheckbox("xp+20 yp+28 Section venableToolonStartCheckbox -TabStop", "軟體啟動時自動啟用改鍵輔助")
+        enableToolAfterLoadCheckbox := MainGui.AddCheckbox("xs y+18 venableToolAfterLoad -TabStop", "存檔讀取成功後自動啟用改鍵輔助")
+        summonBagAfterLoadCheckbox := MainGui.AddCheckbox("xs y+18 vsummonBagAfterLoad -TabStop", "存檔讀取成功後自動召喚背包 (發送 Esc)")
+        autoToggleToolCheckbox := MainGui.AddCheckbox("xs y+18 vautoToggleToolCheckbox -TabStop", "打字聊天時自動暫停改鍵 (Enter/左鍵/Esc 自動偵測，避免聊天衝突)")
+        hideMainCheckbox := MainGui.AddCheckbox("xs y+18 vhideMainCheckbox -TabStop", "軟體啟動時直接最小化/隱藏主視窗 (可按 F8 呼叫)")
 
-        ; summon bag after load
-        summonBagAfterLoadCheckbox := MainGui.AddCheckbox("xs y+20 Section vsummonBagAfterLoad -TabStop", "Summon bag After Loading Savefile")
+        ; GroupBox 系統進階設定
+        MainGui.AddGroupBox("xs ys y+30 Section w550 h160", "系統進階設定 (Advanced)")
 
-        ; show main window at start
-        hideMainCheckbox := MainGui.AddCheckbox("xs y+20 Section vhideMainCheckbox -TabStop", "Hide Main Window at Start")
-
-        ; show overlay at start
-        hideOverlayCheckbox := MainGui.AddCheckbox("xs y+20 Section vhideOverlayCheckbox -TabStop", "Hide Overlay at Start")
-
-        ; auto toggle tool on enter (for messaging in game)
-        autoToggleToolCheckbox := MainGui.AddCheckbox("xs y+20 Section vautoToggleToolCheckbox -TabStop", "Auto Toggle Tool on Enter / Left Click / Esc (For Messaging in Game)")
-
-        ; key delay
-        MainGui.AddText("xs y+20", "Delay between keys(ms): ")
-        keyDelayTextbox := MainGui.AddEdit("x+10 yp-3 Number Limit2 -WantReturn vkeyDelay -TabStop w50", "10")
-        applyButton := MainGui.AddButton("x+10 w120 h20 -TabStop", "Apply")
-        applyButton.SetFont("s10 w500")
+        MainGui.AddText("xp+20 yp+30", "按鍵間隔延遲時間 (ms): ")
+        keyDelayTextbox := MainGui.AddEdit("x+10 yp-3 Number Limit3 -WantReturn vkeyDelay -TabStop w60", "10")
+        applyButton := MainGui.AddButton("x+15 w100 h28 -TabStop", "套用延遲")
+        applyButton.SetFont("s9 w600")
         applyButton.OnEvent("Click", onClickApply)
 
-        ; check update button
-        checkButton := MainGui.AddButton("xs y+20 w120 h20 -TabStop", "Check")
-        checkButton.SetFont("s10 w500")
-        checkButton.OnEvent("Click", onClickCheck)
-        MainGui.AddText("x+20 yp+2", "Check updates and download install if needed.")
-
-        ; reset settings button
-        resetButton := MainGui.AddButton("xs y+20 w120 h20 -TabStop", "Reset")
-        resetButton.SetFont("s10 w500")
+        resetButton := MainGui.AddButton("xs+20 y+25 w150 h36 -TabStop", "↩️ 重設所有設定")
+        resetButton.SetFont("s9")
         resetButton.OnEvent("Click", onClickReset)
-        MainGui.AddText("x+20 yp+2", "Initialize All Settings")
+        MainGui.AddText("x+15 yp+10 cGray", "清除 wc3rpgToolData.ini 並恢復所有預設值")
 
-        ; var
         this.checkboxes := [
             enableToolonStartCheckbox,
             enableToolAfterLoadCheckbox,
             summonBagAfterLoadCheckbox,
             hideMainCheckbox,
-            hideOverlayCheckbox,
             autoToggleToolCheckbox
         ]
 
         for checkbox in this.checkboxes {
             checkbox.OnEvent("Click", onClickCheckbox)
-            checkbox.Value := IniRead(iniFileName, this.tabName, checkbox.Name, false)
+            checkbox.Value := IniRead(iniFileName, this.tabName, checkbox.Name, (checkbox.Name == "autoToggleToolCheckbox" ? true : false))
         }
 
         keyDelayTextbox.text := IniRead(iniFileName, "SettingsTab", "keyDelay", 10)
 
-        ; events
-        onClickCheck(Button, Info) {
-            newestVersion := getNewestVersionTag()
-            message := "The Newest Version is " newestVersion "`nDownload and Install New Version?"
-            if version == newestVersion {
-                message := "Current Version is the Newest"
-            }
-
-            ; output message box
-            result := MsgBox(message, "Check Updates" , "OC Owner" MainGui.Hwnd)
-
-            if result == "OK" && version != newestVersion {
-                downloadNewVersion(newestVersion)
-            }
-        }
-
         onClickReset(Button, Info) {
-            try {
+            result := MsgBox("確定要清除所有設定並恢復預設值嗎？", "重設設定", "YesNo Icon? Owner" MainGui.Hwnd)
+            if (result == "Yes") {
                 try FileDelete(A_ScriptDir "\" iniFileName)
                 Reload
             }
@@ -90,64 +58,18 @@ class Settings {
         onClickApply(Button, Info) {
             delay := keyDelayTextbox.text
             if IsInteger(delay) {
-                SetKeyDelay(Integer(keyDelayTextbox.text))
+                SetKeyDelay(Integer(delay))
                 IniWrite(Integer(delay), iniFileName, this.tabName, "keyDelay")
-                ToolTip("updated")
-                SetTimer () => ToolTip(), -5000
+                ToolTip("✅ 已套用按鍵延遲時間: " delay " ms")
+                SetTimer () => ToolTip(), -2500
             } else {
-                ToolTip("key delay has to be a number")
-                SetTimer () => ToolTip(), -5000
+                ToolTip("⚠️ 延遲時間必須為整數數字")
+                SetTimer () => ToolTip(), -2500
             }
         }
 
         onClickCheckbox(Button, Info) {
             IniWrite(Button.Value, iniFileName, this.tabName, Button.Name)
-        }
-
-        ; function
-        getNewestVersionTag() {
-            whr := ComObject("WinHttp.WinHttpRequest.5.1")
-            whr.Open("GET", "https://github.com/Lch3181/Warcraft-lll_TWrpg_AHKs/tags", true)
-            whr.Send()
-            ; Using 'true' above and the call below allows the script to remain responsive.
-            whr.WaitForResponse()
-            text := whr.ResponseText
-
-            ; regex the version
-            pattern := '\/Lch3181\/Warcraft-lll_TWrpg_AHKs\/releases\/tag\/(.*)\" data'
-            if (RegExMatch(text, pattern, &Matches) <= 0) {
-                return
-            }
-            version := Matches[1]
-
-            return version
-        }
-
-        downloadNewVersion(version) {
-            target := "wc3rpgTool.exe"
-            if !A_Is64bitOS {
-                target := "wc3rpgTool_86.exe"
-            }
-
-            downloadUrl := "https://github.com/Lch3181/Warcraft-lll_TWrpg_AHKs/releases/download/" version "/" target
-            downloadTo := A_Temp "\" target
-
-            Download(downloadUrl, downloadTo)
-
-            batFileNameLocation := A_Temp "\wc3tooldownload.bat"
-
-            try FileDelete(batFileNameLocation)
-            FileAppend
-            (
-                "@ECHO OFF
-                taskkill /f /im " A_ScriptName "
-                ROBOCOPY `"" A_Temp "`" `"" A_ScriptDir "`" " target "
-                start /d " A_ScriptDir " " A_ScriptDir "\" target
-            ), batFileNameLocation
-
-            Run(batFileNameLocation, , "Hide")
-
-            ExitApp
         }
     }
 }

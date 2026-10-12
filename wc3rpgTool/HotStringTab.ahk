@@ -1,4 +1,4 @@
-#Requires AutoHotkey v2.0
+﻿#Requires AutoHotkey v2.0
 #Include Helper.ahk
 #Include RegisterHotkey.ahk
 
@@ -10,31 +10,31 @@ class HotStringTab {
 
     __New(MainGui, Tab) {
         ; init tab
-        Tab.UseTab("Hotstring")
+        Tab.UseTab(3)
         Tab.OnEvent("Change", onChangeTab)
 
         ; assign
-        MainGui.AddGroupBox("Section w550 h120", "Assign")
-        MainGui.AddText("xp+20 yp+20 w100 h22", "Hotkey: ")
-        MainGui.AddText("x+20", "Message: ")
+        MainGui.AddGroupBox("Section w550 h120", "設定快捷文字 (Assign)")
+        MainGui.AddText("xp+20 yp+20 w100 h22", "快捷鍵: ")
+        MainGui.AddText("x+20", "文字訊息: ")
 
         hotkeyButton := MainGui.AddButton("xs+20 y+5 w100 -TabStop", "")
         hotkeyButton.OnEvent("Click", onClickHotkey)
         hotStringEditGui := MainGui.AddEdit("x+20 h20 r1 w390")
         hotStringEditGui.OnEvent("Focus", onFocusEdit)
 
-        addButton := MainGui.AddButton("xs+20 y+20 w100 h20 -TabStop", "Add")
+        addButton := MainGui.AddButton("xs+20 y+20 w100 h20 -TabStop", "新增")
         addButton.OnEvent("Click", onClickAdd)
 
-        updateButton := MainGui.AddButton("x+20 w100 -TabStop", "Update")
+        updateButton := MainGui.AddButton("x+20 w100 -TabStop", "更新")
         updateButton.OnEvent("Click", onClickUpdate)
 
-        deleteButton := MainGui.AddButton("x+20 w100 -TabStop", "Delete")
+        deleteButton := MainGui.AddButton("x+20 w100 -TabStop", "刪除")
         deleteButton.OnEvent("Click", onClickDelete)
 
         ; hot strings list view
-        MainGui.AddGroupBox("xs ys y+40 w550 h390", "Hot Strings")
-        hotStringLV := MainGui.AddListView("xp+20 yp+30 w510 h340 NoSort -Multi -TabStop", ["Hotkey", "Message"])
+        MainGui.AddGroupBox("xs ys y+40 w550 h390", "快捷文字列表 (Hot Strings)")
+        hotStringLV := MainGui.AddListView("xp+20 yp+30 w510 h340 NoSort -Multi -TabStop", ["快捷鍵", "訊息內容"])
         hotStringLV.OnEvent("Click", onClickRow)
         hotStringLV.ModifyCol(1, 100)
         hotStringLV.ModifyCol(2, 400)
@@ -63,14 +63,14 @@ class HotStringTab {
 
         onChangeTab(Tab, Info) {
             ih.Stop()
-            if Tab.Text == "Hotstring" {
+            if (Tab.Value == 3 || Tab.Text == "快捷文字" || Tab.Text == "Hotstring") {
                 hotStringEditGui.Focus()
                 ih.OnEnd := endCaptureInput
             }
         }
 
         endCaptureInput(inputObj) {
-            if (!WinActive(MainGui.Title) && Tab.Text != "Hotstring") || this.focused != hotkeyButton {
+            if (!WinActive(MainGui.Title) && Tab.Value != 3 && Tab.Text != "快捷文字" && Tab.Text != "Hotstring") || this.focused != hotkeyButton {
                 return
             }
 

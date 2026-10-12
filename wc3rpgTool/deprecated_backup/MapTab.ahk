@@ -1,4 +1,4 @@
-#Requires AutoHotkey v2.0
+﻿#Requires AutoHotkey v2.0
 #Include Helper.ahk
 
 class MapTab {
@@ -6,29 +6,29 @@ class MapTab {
 
     __New(MainGui, Tab) {
         ; init tab
-        Tab.UseTab("Map")
+        Tab.UseTab(5)
         Tab.OnEvent("Change", onChangeTab)
 
         ; drag and drop map
         MainGUI.OnEvent("DropFiles", dropMap)
 
         ; info
-        MainGui.AddGroupBox("Section w550", "Info")
-        MainGui.AddText("xp+20 yp+25", "Drag and drop new map to anywhere")
+        MainGui.AddGroupBox("Section w550", "說明 (Info)")
+        MainGui.AddText("xp+20 yp+25", "可將新地圖 (.w3x) 拖曳至此處自動匯入")
 
         ; settings
-        MainGui.AddGroupBox("Section xs ys y+30 w550 h80", "Settings")
-        MainGui.AddText("xp+20 yp+25", "Map Folder:")
+        MainGui.AddGroupBox("Section xs ys y+30 w550 h80", "地圖目錄設定 (Settings)")
+        MainGui.AddText("xp+20 yp+25", "地圖資料夾路徑:")
         mapFolder := MainGui.AddEdit("w350 ReadOnly -TabStop", "")
-        MainGui.AddButton("x+20 w60 -TabStop", "Select").OnEvent("Click", selectMapFolder)
-        MainGui.AddButton("x+20 w60 -TabStop", "Open").OnEvent("Click", openMapFolder)
+        MainGui.AddButton("x+20 w60 -TabStop", "瀏覽...").OnEvent("Click", selectMapFolder)
+        MainGui.AddButton("x+20 w60 -TabStop", "開啟目錄").OnEvent("Click", openMapFolder)
         
         ; maps
-        MainGui.AddGroupBox("Section xs ys y+30 w550 h370", "Maps")
-        MainGui.AddText("xp+20 yp+20", "Map Filter:")
+        MainGui.AddGroupBox("Section xs ys y+30 w550 h370", "地圖清單 (Maps)")
+        MainGui.AddText("xp+20 yp+20", "地圖名稱過濾:")
         filter := MainGui.AddEdit("w350", "twrpg")
         filter.OnEvent("Change", onChangeMapFilter)
-        mapList := MainGui.AddListView("yp+30 w510 h280 SortDesc -TabStop", ["Name", "Date", "Hidden Date", "Size(MB)"])
+        mapList := MainGui.AddListView("yp+30 w510 h280 SortDesc -TabStop", ["地圖名稱", "建立日期", "Hidden Date", "大小 (MB)"])
         mapList.OnEvent("ColClick", onClickCol)
 
         ; init variables
@@ -47,7 +47,7 @@ class MapTab {
 
         ; events
         onChangeTab(Tab, Info) {
-            if Tab.Text == "Map" {
+            if Tab.Value == 5 {
                 filter.Focus()
             }
         }
@@ -99,14 +99,18 @@ class MapTab {
             fileNames := []
             for file in FileArray {
                 if InStr(file, ".w3x") {
-                    FileCopy(file, mapFolder.Text "\", 1)
                     split := StrSplit(file, "\")
-                    fileNames.Push(StrReplace(split.Pop(), ".w3x", ""))
+                    fileName := split.Pop()
+                    targetFile := mapFolder.Text "\" fileName
+                    if (file != targetFile) {
+                        try FileCopy(file, mapFolder.Text "\", 1)
+                    }
+                    fileNames.Push(StrReplace(fileName, ".w3x", ""))
                 }
             }
             if (fileNames.Length > 0) {
                 updateMapList(filter.text)
-                MsgBox("Added: `n" Join("`n", fileNames*))
+                MsgBox("已加入地圖：`n" Join("`n", fileNames*))
             }
         }
     }

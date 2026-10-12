@@ -1,4 +1,4 @@
-#Requires AutoHotkey v2.0
+﻿#Requires AutoHotkey v2.0
 #Include wc3rpgTool.ahk
 #Include Helper.ahk
 
@@ -12,53 +12,52 @@ class LoaderTab {
     
     __New(MainGui, Tab) {
         ; init tab
-        Tab.UseTab("Loader")
+        Tab.UseTab(1)
 
         ; drag and drop save file
         MainGui.OnEvent("DropFiles", dropSaveFiles)
 
         ; loader
-        MainGui.AddGroupBox("Section w550", "Load")
+        MainGui.AddGroupBox("Section w550", "讀檔 (Load)")
         SelectedFile := MainGui.AddText("xp+20 yp+25 w100", "")
-        MainGui.AddButton("x+20 ys+20 w100 default", "Load").OnEvent("Click", loadButton)
-        MainGui.AddText("x+20 yp+5", "Drag and drop new save file to anywhere")
+        MainGui.AddButton("x+20 ys+20 w100 default", "載入 (Load)").OnEvent("Click", loadButton)
+        MainGui.AddText("x+20 yp+5", "可將外部存檔 txt 拖曳至此處匯入")
 
         ; hot strings
-        MainGui.AddGroupBox("xs ys y+25 Section w550 h100", "Hotstrings")
-        MainGui.AddText("xp+20 yp+25 w200 h20 Border 0x200 Center", "-l (filename) / -load (filename)").SetFont("s10")
-        MainGui.AddText("x+20 yp+2", "wc3 ingame command to Load (optional filename) or selected file")
+        MainGui.AddGroupBox("xs ys y+25 Section w550 h100", "遊戲內快捷指令 (Hotstrings)")
+        MainGui.AddText("xp+20 yp+25 w200 h20 Border 0x200 Center", "-l (檔名) / -load (檔名)").SetFont("s10")
+        MainGui.AddText("x+20 yp+2", "魔獸遊戲內指令：讀取指定存檔或目前選取存檔")
 
         MainGui.AddText("xs+20 y+20 w200 h20 Border 0x200 Center", "-ll / -loadlast").SetFont("s10")
-        MainGui.AddText("x+20 yp+2", "wc3 ingame command to Load Last Loaded Save File")
+        MainGui.AddText("x+20 yp+2", "魔獸遊戲內指令：讀取上一次載入的存檔")
         
 
         ; files
-        MainGui.AddGroupBox("Section xs ys y+30 w550 h265", "Files")
-        MainGui.AddText("xp+20 yp+20 w510", "Search: ")
+        MainGui.AddGroupBox("Section xs ys y+30 w550 h265", "存檔清單 (Files)")
+        MainGui.AddText("xp+20 yp+20 w510", "搜尋存檔: ")
         MainGui.AddEdit("xs+20 y+5 w510 -TabStop", this.filter).OnEvent("Change", onChangeFilterText)
-        this.fileList := MainGui.AddListView("xs+20 y+10 w510 h180 Sort -TabStop", ["Name", "Date", "Hidden Date", "Status", "Loading Message"])
+        this.fileList := MainGui.AddListView("xs+20 y+10 w510 h180 Sort -TabStop", ["存檔名稱", "存檔日期", "Hidden Date", "狀態", "載入訊息"])
         this.fileList.OnEvent("Click", onClickRow)
         this.fileList.OnEvent("DoubleClick", onDoubleClickRow)
         this.fileList.OnEvent("ContextMenu", onRightClickRow)
 
         ; file Menu
         fileMenu := Menu()
-        fileMenu.Add("Open", fileMenuOpenFile)
+        fileMenu.Add("開啟檔案", fileMenuOpenFile)
         fileMenu.Add()
-        fileMenu.Add("Add Loading Message", fileMenuAddLoadingMessage)
+        fileMenu.Add("新增載入訊息", fileMenuAddLoadingMessage)
         fileMenu.Add()
-        fileMenu.Add("Hide File", fileMenuHideFile)
-        fileMenu.Add("Show File", fileMenuShowFile)
-        fileMenu.Add("Show / Hide Hidden Files", fileMenuShowHideHiddenFiles)
+        fileMenu.Add("隱藏此檔案", fileMenuHideFile)
+        fileMenu.Add("取消隱藏此檔案", fileMenuShowFile)
+        fileMenu.Add("顯示 / 隱藏 已隱藏檔案", fileMenuShowHideHiddenFiles)
 
         ; settings
-        MainGui.AddGroupBox("Section xs ys y+20 w550 h100", "Settings")
-        convertNameCheckBox := MainGui.AddCheckbox("xp+20 yp+20 -TabStop", "Convert Name for Warcraft III Reforged")
-        convertNameCheckBox.OnEvent("Click", onClickConvertNameCheckBox)
-        MainGui.AddText("yp+25", "TWRPG Folder:")
-        this.TWRPGFolder := MainGui.AddEdit("w350 r1 ReadOnly -TabStop", "")
-        MainGui.AddButton("x+20 w60 -TabStop", "Select").OnEvent("Click", selectButton)
-        MainGui.AddButton("x+20 w60 -TabStop", "Open").OnEvent("Click", openButton)
+        MainGui.AddGroupBox("Section xs ys y+20 w550 h75", "存檔設定 (Settings)")
+        MainGui.AddText("xp+20 yp+28", "TWRPG 存檔目錄:")
+        this.TWRPGFolder := MainGui.AddEdit("w360 r1 -TabStop", "")
+        this.TWRPGFolder.OnEvent("Change", onFolderChange)
+        MainGui.AddButton("x+15 w65 -TabStop", "瀏覽...").OnEvent("Click", selectButton)
+        MainGui.AddButton("x+10 w70 -TabStop", "開啟目錄").OnEvent("Click", openButton)
 
         ; init variables
         sortAsc := false
@@ -71,7 +70,6 @@ class LoaderTab {
         getHiddenFiles()
         SelectedFile.Text := IniRead(iniFileName, this.tabName, "selectedFile", "N/A")
         this.TWRPGFolder.Text := IniRead(iniFileName, this.tabName, "TWRPGFolder", A_MyDocuments "\Warcraft III\CustomMapData\TWRPG")
-        convertNameCheckBox.Value := IniRead(iniFileName, this.tabName, "convertNameCheckBox", true)
         this.updateFileList()
 
         ; hotstrings
@@ -85,8 +83,18 @@ class LoaderTab {
         HotIfWinactive()
 
         ; events
+        onFolderChange(*) {
+            inputPath := Trim(this.TWRPGFolder.Text, '" `t`r`n')
+            if (inputPath != "" && DirExist(inputPath)) {
+                if (inputPath != IniRead(iniFileName, this.tabName, "TWRPGFolder", "")) {
+                    IniWrite(inputPath, iniFileName, this.tabName, "TWRPGFolder")
+                    this.updateFileList()
+                }
+            }
+        }
+
         selectButton(Button, Info) {
-            Folder := SelectFolder()
+            Folder := SelectFolder(this.TWRPGFolder.Text)
             if Folder != "" {
                 this.TWRPGFolder.Text := Folder
                 IniWrite(this.TWRPGFolder.Text, iniFileName, this.tabName, "TWRPGFolder")
@@ -102,22 +110,22 @@ class LoaderTab {
             loadSaveFile()
         }
 
-        onClickConvertNameCheckBox(CheckBox, Info) {
-            IniWrite(CheckBox.Value, iniFileName, this.tabName, "convertNameCheckBox")
-        }
-
         dropSaveFiles(GuiObj, GuiCtrlObj, FileArray, X, Y) {
             fileNames := []
             for file in FileArray {
                 if InStr(file, ".txt") {
-                    FileCopy(file, this.TWRPGFolder.Text "\", 1)
                     split := StrSplit(file, "\")
-                    fileNames.Push(StrReplace(split.Pop(), ".txt", ""))
+                    fileName := split.Pop()
+                    targetFile := this.TWRPGFolder.Text "\" fileName
+                    if (file != targetFile) {
+                        try FileCopy(file, this.TWRPGFolder.Text "\", 1)
+                    }
+                    fileNames.Push(StrReplace(fileName, ".txt", ""))
                 }
             }
 
             if (fileNames.Length > 0) {
-                MsgBox("Added: `n" Join("`n", fileNames*))
+                MsgBox("已加入存檔：`n" Join("`n", fileNames*))
             }
 
             this.updateFileList()
@@ -161,7 +169,7 @@ class LoaderTab {
             message := IniRead(iniFileName, this.tabName, file, "")
 
             ; promote for input
-            IB := InputBox("Enter the message you want to show when loading", "Loading Message", "h100", message)
+            IB := InputBox("請輸入載入存檔時要自動發送的聊天訊息", "設定載入訊息", "h100", message)
             if IB.Result == "Cancel" {
                 return
             }
@@ -190,7 +198,7 @@ class LoaderTab {
                 FileAppend(hiddenFilesArray.Length > 0 ? Join("`n", hiddenFilesArray*) : " ", hiddenFilesAddress)
                 this.updateFileList()
             } catch Error as e {
-                ToolTip(this.fileList.GetText(lvSelectedRow) " is not Hidden")
+                ToolTip(this.fileList.GetText(lvSelectedRow) " 不是隱藏檔案")
                 SetTimer () => ToolTip(), 5000
             }
         }
@@ -222,7 +230,7 @@ class LoaderTab {
 
         ; functions
         loadSaveFile(lastSaveFile := false, saveFileName := SelectedFile.Text) {
-            global showMainGui := false
+            global showMainGui
             if lastSaveFile {
                 saveFileName := IniRead(iniFileName, this.tabName, "selectedFile", SelectedFile.Text)
             }
@@ -231,62 +239,60 @@ class LoaderTab {
             ; save last load
             IniWrite(selectedFile.Text, iniFileName, this.tabName, "selectedFile")
 
-            ; read save file
-            if not FileExist(path) {
-                ToolTip("File does not exist")
+            ; 先檢查魔獸爭霸 3 視窗是否存在，若未開遊戲則不隱藏介面
+            if !WinExist(WarcraftIII) {
+                ToolTip("❌ 找不到魔獸爭霸 3 視窗，請先啟動遊戲！")
                 SetTimer () => ToolTip(), -5000
                 return
             }
 
-            MainGui.Hide()
+            ; 檢查存檔檔案是否存在
+            if not FileExist(path) {
+                ToolTip("❌ 存檔檔案不存在：" saveFileName)
+                SetTimer () => ToolTip(), -5000
+                return
+            }
 
-            ; read file
+            ; 讀取存檔
             text := FileRead(path, "UTF-8")
             ; count load codes
             StrReplace(text, "-load", "-load", , &count)
 
-            ; get username
-            pattern := '(User Name|아이디):\s((?:[^""]|\\"")*)'
-            if (RegExMatch(text, pattern, &Matches) <= 0) {
+            ; 檢查是否有 -load 存檔碼
+            if (count <= 0) {
+                ToolTip("❌ 存檔檔案中找不到任何 -load 存檔碼！")
+                SetTimer () => ToolTip(), -5000
                 return
             }
-            userName := Matches[2]
 
-            ; get code
+            ; 取得 load 碼
             i := 1
             codes := []
             while (i <= count) {
                 pos := InStr(text, "-load", , 1, i)
                 RegExMatch(text, "(-load [a-zA-Z\d\?@#$%&-]*)", &Match, pos)
-                codes.Push(Match[1])
-
+                if Match {
+                    codes.Push(Match[1])
+                }
                 i += 1
             }
 
-            if WinExist(WarcraftIII) && !WinActivate(WarcraftIII) {
-                WinActivate
-            } else {
-                ToolTip("Warcraft III not found")
-                SetTimer () => ToolTip(), -5000
-                return
-            }
+            ; 隱藏工具視窗，並聚焦至魔獸爭霸 3 自動輸入指令
+            showMainGui := false
+            MainGui.Hide()
+            WinActivate(WarcraftIII)
+            WinWaitActive(WarcraftIII, , 2)
 
             ; loading message
             message := IniRead(iniFileName, this.tabName, saveFileName, "")
             if message {
                 wc3Chat(message)
             }
-            ; convert name
-            if convertNameCheckBox.Value {
-                wc3Chat("-convert " userName)
-            }
             ; loadcodes
             for code in codes {
                 Sleep(200)
                 wc3Chat(code)
             }
-            ; clean screen
-            wc3Chat("-refresh")
 
             ; bind hero to 1
             Sleep(1000)
@@ -331,12 +337,12 @@ class LoaderTab {
                     continue
                 }
 
-                status := "Hidden"
+                status := "隱藏"
             }
 
-            ; skip non save file
+            ; skip non save file (支援英文、韓文與中文版世界RPG存檔特徵)
             text := FileRead(A_LoopFileFullPath, "UTF-8")
-            if (RegExMatch(text, '(----------(?|Hero Inventory|영웅 아이템)----------)') == 0) {
+            if (RegExMatch(text, '(----------(?|Hero Inventory|영웅 아이템|携带物品|攜帶物品|背包|仓库|倉庫)----------)') == 0) {
                 continue
             }
 

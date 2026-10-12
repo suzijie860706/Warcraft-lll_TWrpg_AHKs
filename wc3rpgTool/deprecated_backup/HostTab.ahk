@@ -1,67 +1,67 @@
-#Requires AutoHotkey v2.0
+﻿#Requires AutoHotkey v2.0
 #Include Helper.ahk
 
 class HostTab {
     __New(MainGui, Tab) {
         ; init tab
-        Tab.UseTab("Host")
+        Tab.UseTab(4)
 
         ; hosting
-        MainGui.AddGroupBox("Section w550 h380", "Host")
+        MainGui.AddGroupBox("Section w550 h380", "主機開房管理 (Host)")
 
         ; bot name
-        MainGui.AddText("xp+20 yp+20 w200", "Bot Name: ")
+        MainGui.AddText("xp+20 yp+20 w200", "機器人名稱 (Bot Name): ")
         botNameCB := MainGui.AddComboBox("y+5 w200", [])
-        MainGui.AddButton("x+20 yp-1 w100 -TabStop vbotNameClear", "Clear")
+        MainGui.AddButton("x+20 yp-1 w100 -TabStop vbotNameClear", "清空")
             .OnEvent("Click", onClickClear)
-        MainGui.AddButton("x+20 w100 -TabStop vbotNameDelete", "Delete")
+        MainGui.AddButton("x+20 w100 -TabStop vbotNameDelete", "刪除")
             .OnEvent("Click", onClickDelete)
 
         ; trigger
-        MainGui.AddText("xs+20 y+20 w200", "Trigger: ")
+        MainGui.AddText("xs+20 y+20 w200", "觸發符號 (Trigger): ")
         triggerCB := MainGui.AddComboBox("y+5 w200 Choose1", ["!"])
-        MainGui.AddButton("x+20 yp-1 w100 -TabStop vtriggerClear", "Clear")
+        MainGui.AddButton("x+20 yp-1 w100 -TabStop vtriggerClear", "清空")
             .OnEvent("Click", onClickClear)
-        MainGui.AddButton("x+20 w100 -TabStop vtriggerDelete", "Delete")
+        MainGui.AddButton("x+20 w100 -TabStop vtriggerDelete", "刪除")
             .OnEvent("Click", onClickDelete)
 
         ; game name
-        MainGui.AddText("xs+20 y+20 w200", "Game Name:")
+        MainGui.AddText("xs+20 y+20 w200", "遊戲房間名稱 (Game Name):")
         gameNameCB := MainGui.AddComboBox("y+5 w200", [])
-        MainGui.AddButton("x+20 yp-1 w100 -TabStop vgameNameClear", "Clear")
+        MainGui.AddButton("x+20 yp-1 w100 -TabStop vgameNameClear", "清空")
             .OnEvent("Click", onClickClear)
-        MainGui.AddButton("x+20 w100 -TabStop vgamenameDelete", "Delete")
+        MainGui.AddButton("x+20 w100 -TabStop vgamenameDelete", "刪除")
             .OnEvent("Click", onClickDelete)
 
         ; extra command before host
-        MainGui.AddText("xs+20 y+20 w200", "Extra Command Before Host:")
+        MainGui.AddText("xs+20 y+20 w200", "開房前額外指令:")
         exCommandBeforeCB := MainGui.AddComboBox("y+5 w200", [])
-        MainGui.AddButton("x+20 yp-1 w100 -TabStop vexCommandBeforeClear", "Clear")
+        MainGui.AddButton("x+20 yp-1 w100 -TabStop vexCommandBeforeClear", "清空")
             .OnEvent("Click", onClickClear)
-        MainGui.AddButton("x+20 w100 -TabStop vexCommandBeforeDelete", "Delete")
+        MainGui.AddButton("x+20 w100 -TabStop vexCommandBeforeDelete", "刪除")
             .OnEvent("Click", onClickDelete)
 
         ; extra command after host
-        MainGui.AddText("xs+20 y+20 w200", "Extra Command After Host:")
+        MainGui.AddText("xs+20 y+20 w200", "開房後額外指令:")
         exCommandAfterCB := MainGui.AddComboBox("y+5 w200", [])
-        MainGui.AddButton("x+20 yp-1 w100 -TabStop vexCommandAfterClear", "Clear")
+        MainGui.AddButton("x+20 yp-1 w100 -TabStop vexCommandAfterClear", "清空")
             .OnEvent("Click", onClickClear)
-        MainGui.AddButton("x+20 w100 -TabStop vexCommandAfterDelete", "Delete")
+        MainGui.AddButton("x+20 w100 -TabStop vexCommandAfterDelete", "刪除")
             .OnEvent("Click", onClickDelete)
 
         ; send hosting message
-        MainGui.AddButton("xs+20 y+20 w210 h40 -TabStop vprivate", "Host Private Lobby")
+        MainGui.AddButton("xs+20 y+20 w210 h40 -TabStop vprivate", "建立私人房間 (Private)")
             .OnEvent("Click", onClickHostButton)
-        MainGui.AddButton("x+20 w210 h40 -TabStop vpublic", "Host Public Lobby")
+        MainGui.AddButton("x+20 w210 h40 -TabStop vpublic", "建立公開房間 (Public)")
             .OnEvent("Click", onClickHostButton)
 
         ; hotstrings
-        MainGui.AddGroupBox("xs ys y+40 Section w550 h100", "Hotstrings")
+        MainGui.AddGroupBox("xs ys y+40 Section w550 h100", "遊戲內快捷指令 (Hotstrings)")
         MainGui.AddText("xp+20 yp+25 w120 h20 Border 0x200 Center", "-h / -host").SetFont("s10")
-        MainGui.AddText("x+20 yp+2", "wc3 Ingame Command to Host Private Lobby")
+        MainGui.AddText("x+20 yp+2", "魔獸遊戲內指令：建立私人房間")
 
         MainGui.AddText("xs+20 y+20 w120 h20 Border 0x200 Center", "-hp / -hostpub").SetFont("s10")
-        MainGui.AddText("x+20 yp+2", "wc3 Ingame Command to Host Public Lobby")
+        MainGui.AddText("x+20 yp+2", "魔獸遊戲內指令：建立公開房間")
 
         ; init
         tabName := "HostTab"

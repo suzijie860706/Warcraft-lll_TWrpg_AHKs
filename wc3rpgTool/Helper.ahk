@@ -1,6 +1,11 @@
 #Requires AutoHotkey v2.0
 iniFileName := "wc3rpgToolData.ini"
-WarcraftIII := "Warcraft III"
+GroupAdd("WarcraftGroup", "ahk_exe Warcraft III.exe")
+GroupAdd("WarcraftGroup", "ahk_exe war3.exe")
+GroupAdd("WarcraftGroup", "Warcraft III")
+GroupAdd("WarcraftGroup", "魔兽争霸")
+GroupAdd("WarcraftGroup", "魔獸爭霸")
+WarcraftIII := "ahk_group WarcraftGroup"
 ih := InputHook("V", "{Esc}")
 
 KeyWaitAny()
@@ -70,9 +75,49 @@ ReadableHotkey(hotkey, fullName := false) {
     return hotkey
 }
 
-SelectFolder() {
-    Folder := DirSelect(, 0)
-    return Folder
+SelectFolder(initialFolder := "") {
+    static CLSID_FileOpenDialog := "{DC1C5A9C-E88A-4dde-A5A1-60F82A20AEF7}"
+    static IID_IFileOpenDialog  := "{D57C7288-D4AD-4768-BE02-9D969532D960}"
+    static FOS_PICKFOLDERS      := 0x00000020
+    static FOS_FORCEFILESYSTEM  := 0x00000040
+    static SIGDN_FILESYSPATH    := 0x80058000
+
+    try {
+        dialog := ComObject(CLSID_FileOpenDialog, IID_IFileOpenDialog)
+        ; 設定僅選取資料夾與檔案系統選項
+        ComCall(9, dialog, "UInt", FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM)
+        ComCall(17, dialog, "WStr", "選擇 TWRPG 存檔資料夾")
+
+        ; 若已有初始路徑則預設開啟該目錄
+        if (initialFolder != "" && DirExist(initialFolder)) {
+            pFolderItem := 0
+            if !DllCall("shell32\SHCreateItemFromParsingName", "WStr", initialFolder, "Ptr", 0, "Ptr", Buffer(16), "Ptr*", &pFolderItem) {
+                ComCall(12, dialog, "Ptr", pFolderItem)
+                ObjRelease(pFolderItem)
+            }
+        }
+
+        ; 顯示新式檔案總管視窗 (支援網址列、常用路徑與路徑貼上)
+        hr := ComCall(3, dialog, "Ptr", 0)
+        if (hr == 0) {
+            pItem := 0
+            ComCall(20, dialog, "Ptr*", &pItem)
+            if (pItem) {
+                pDisplayName := 0
+                ComCall(5, pItem, "UInt", SIGDN_FILESYSPATH, "Ptr*", &pDisplayName)
+                if (pDisplayName) {
+                    selectedPath := StrGet(pDisplayName, "UTF-16")
+                    DllCall("ole32\CoTaskMemFree", "Ptr", pDisplayName)
+                    ObjRelease(pItem)
+                    return selectedPath
+                }
+                ObjRelease(pItem)
+            }
+        }
+    } catch {
+        return DirSelect(initialFolder, 1, "選擇 TWRPG 存檔資料夾")
+    }
+    return ""
 }
 
 GetFileNamesInFolder(path) {
