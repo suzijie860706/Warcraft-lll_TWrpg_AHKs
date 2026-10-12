@@ -1,126 +1,96 @@
-Any feedbacks or request are welcome, do it quick when I still have passion on this.
+# Warcraft III RPG 輔助工具 (wc3rpgTool)
 
-this tool works on reforged and eb(run as admin)
-unlike wfe, this one simulate the real input of user instead of altering ram for wc3 only
+專為《魔獸爭霸 3》（支援經典版 EB / 重製版 Reforged）RPG 地圖（如 The World RPG 等）設計的現代化輔助工具。使用 AutoHotkey v2 開發，提供直覺的繁體中文 UI 介面、物品欄改鍵、自動聊天避讓、快速存讀檔與全域自訂快捷鍵等功能。
 
-tool auto disable on pressing enter(ingame chat) and re-enable after pressing enter/esc/left click again(finish ingame chat)
+> ⚠️ **請以系統管理員身分執行（Run as Administrator）**，以確保遊戲內按鍵能正常發送與捕捉。
 
-unlike wfe it cant detect if ur in lobby or ingame, so better disable it with f2 when ur in lobby
+---
 
-## Loader
-click any of ur savefile and then click load  
-or in game type -l (filename) / -load (filename) will load ur filename(optional, can leave empty) or selected savefile  
-or in game type -ll / -loadlast will load ur last loaded savefile  
-after load will save the history of ur last loaded savefile
+## 🌟 主要功能亮點
 
-can drag and drop new save file into ui  
-can search/filter out save files in textbox  
-right click save file can hide unwanted saves  
-right click save file can add loading message to send when loading character in wc3
+* **純鍵盤訊號模擬**：不修改遊戲記憶體（RAM），相較於 WFE 等記憶體外掛更安全、更穩定，不干擾遊戲完整性。
+* **智慧防衝突（自動暫停）**：在遊戲內按下 `Enter` 進入打字聊天時，輔助工具會**自動暫停改鍵**；按 `Enter` / `Esc` 送出或取消打字時，自動重新啟用改鍵，打字不再誤觸技能與物品。
+* **全域快捷鍵與快速切換**：
+  * 按 `F2` 可隨時在遊戲中手動「開啟 / 關閉」改鍵輔助。
+  * 按 `F8` 可隨時在遊戲中「顯示 / 隱藏」工具主視窗。
+  * 支援背景常駐與 Windows 系統匣圖示快速選單。
 
-![Imgur](https://imgur.com/8Y0g9Ef.png)
-![Imgur](https://imgur.com/mk01Gnq.png)
+---
 
-## remap keyboard
+## 📖 各分頁功能詳細說明
 
-Original spells are the current wc3 spell hotkeys on ur bot right UI grid
+### 1. 讀檔器 (Loader)
+專為 RPG 玩家設計的存檔管理與自動讀取系統。
 
-New spells are the one u want to press to send the corresponding hotkey to wc3
+* **遊戲內指令讀檔**：
+  * 輸入 `-l <檔名>` 或 `-load <檔名>`：自動輸入指令讀取指定存檔（若不加檔名則讀取目前選取的存檔）。
+  * 輸入 `-ll` 或 `-loadlast`：快速讀取上一次載入的角色存檔。
+* **拖曳匯入**：可直接將外部角色存檔（`.txt`）拖放進視窗清單完成匯入。
+* **存檔搜尋與管理**：支援即時文字搜尋過濾、隱藏暫不使用的存檔、自訂角色載入時的問候/附帶訊息。
+* **歷史紀錄**：自動保存最後一次成功讀檔的時間與名稱。
 
-Original Inventory hotkeys are  
-numpad7 numpad8  
-numpad4 numpad5  
-numpad1 numpad2
+---
 
-mouse hotkeys u know  
-left and right click
+### 2. 改鍵工具 (Key Remap)
+直覺可視化的物品欄 6 格改鍵與滑鼠自訂介面。
 
-**control**  
-click on the button box to remove then click any key or key combination on keyboard to register a new one
+* **物品欄 6 格對照**：
+  * 【欄位 1】左上格（對應魔獸原生物品欄 `Numpad 7`）
+  * 【欄位 2】右上格（對應魔獸原生物品欄 `Numpad 8`）
+  * 【欄位 3】中左格（對應魔獸原生物品欄 `Numpad 4`）
+  * 【欄位 4】中右格（對應魔獸原生物品欄 `Numpad 5`）
+  * 【欄位 5】左下格（對應魔獸原生物品欄 `Numpad 1`）
+  * 【欄位 6】右下格（對應魔獸原生物品欄 `Numpad 2`）
+* **自訂方式**：點擊方塊後直接按下鍵盤按鍵即可綁定，介面具備防重複檢查。
+* **一鍵預設範本**：
+  * ⚡ **一鍵設為 1 ~ 6 鍵**
+  * ⚡ **一鍵設為 Z X C V 鍵**
+  * 🗑️ **清空所有物品欄**
+* **滑鼠側鍵映射**：可將滑鼠第 4 鍵（`XButton1`）與第 5 鍵（`XButton2`）映射為指定功能或快捷鍵。
 
-right click button box to enable/disable quickcast (left click after pressing hotkey)
+---
 
-enable/disable sections on bot right checkboxes
+### 3. 快捷文字 (Quick Message)
+打王、報招、發送常用指令的快速巨集工具。
 
-**note**  
-hotkey cant be duplicated  
-original keys can be any single key, just make sure they match ur wc3, leaving them empty will result new remaped key sending empty key
+* 自訂任何觸發按鍵（如 `F5`、`F6` 等）。
+* 按下快捷鍵後，工具會自動開啓遊戲對話框、貼上文字並送出。
+* 支援隨時新增、更新或刪除常用發話範本。
 
-Mouse buttons cannot be detected when assigning a key for inventory/quick cast, but user can edit the data.ini file to make mouse button works. I cannot find a way to detect mouse buttons on ahk, let me know if any knows how to do it.
+---
 
-Examples: Common mouse buttons Mbutton = Middle button, XButton1 = Mouse button 3, XButton2 = Mouse button 4.
+### 4. 快捷鍵說明與設定 (Hotkeys)
+完整展示全域功能鍵對照清單，並支援自訂設定。
 
-Different mouse has different buttons name.
+* **即時雙擊修改**：在列表上雙擊兩下任一項目，即可直接更換按鍵。
+* **設定檔與熱載入**：
+  * 點擊「📝 開啟快捷鍵設定檔」，可直接透過記事本編輯 `HotkeysConfig.ini`（支援 `Ctrl (^)`、`Alt (!)`、`Shift (+)` 等組合鍵）。
+  * 修改存檔後，點擊「🔄 重新載入設定」立即生效，無須重啟應用程式。
+  * 提供「↩️ 恢復預設值」快速還原所有快捷鍵。
 
-```
-inventoryHK1=$MButton
-inventoryHK2=$XButton1
-inventoryHK3=$XButton2
-inventoryHK4=$4
-inventoryHK5=$5
-inventoryHK6=$6
-```
+---
 
-![Imgur](https://imgur.com/B8Ss8Nl.png)
+### 5. 功能偏好與系統設定 (Settings)
+自訂軟體執行細節與行為開關。
 
-## Quick message
-send message with hotkey
+* **功能偏好設定**：
+  * ☑️ 軟體啟動時自動啟用改鍵輔助
+  * ☑️ 存檔讀取成功後自動啟用改鍵輔助
+  * ☑️ 存檔讀取成功後自動召喚背包（發送 `Esc`）
+  * ☑️ 打字聊天時自動暫停改鍵（Enter / 左鍵 / Esc 偵測）
+  * ☑️ 軟體啟動時直接最小化 / 隱藏主視窗（可按 `F8` 喚醒）
+* **進階延遲調校**：
+  * 可微調按鍵模擬發送間隔時間（預設 `10 ms`）。
+  * 提供重設按鈕，可一鍵清除 `wc3rpgToolData.ini` 並還原初始狀態。
 
-**control**  
-click the hotkey button to remove then click any key or key combination on keyboard for the trigger u want
+---
 
-type any message to the textbox of u want
+## 🛠️ 常見問題 (FAQ)
 
-click add to register that quick message
-
-select row then edit on hotkey button or textbox message, then click update
-
-select row then click delete to delete
-
-**note**  
-hotkey cant be duplicated from any other
-can have more then one message for the same hotkey
-
-![Imgur](https://imgur.com/8dLlDGV.png)
-
-## Host
-one click messaging bot
-
-**control**  
-just type or select from the combo box
-
-then click the host button or type the hotstrings ingame
-
-**note**  
-settings will be saved after hosting
-
-![Imgur](https://imgur.com/lKyUxRN.png)
-
-## Map
-really just for lazy me dont want to open download folder and paste map there
-
-**control**  
-just drag and drop any map into the UI
-
-**note**  
-can drop more than 1
-
-![Imgur](https://imgur.com/LcWvSSY.png)
-
-## Hotkeys
-
-currently is just showing what are the things u can do
-
-hotkeys will be editable later
-
-![Imgur](https://imgur.com/oFrB1my.png)
-
-## Settings
-
-checkboxes to toggle different things
-
-check updates and promote to download and install newest version if there is one
-
-reset everything
-
-![Imgur](https://imgur.com/nwTbTra.png)
+1. **為什麼我在遊戲內按改鍵沒有反應？**
+   * 請確認本工具已**以系統管理員身分執行**（對 `wc3rpgTool.ahk` 或編譯後的 `.exe` 點右鍵 ➔ 以系統管理員身分執行）。
+   * 請確認魔獸爭霸 3 視窗處於焦點狀態，且底部狀態列顯示「改鍵輔助：已啟用」（可按 `F2` 切換）。
+2. **在遊戲大廳時按鍵會不會受影響？**
+   * 本工具不會自動判斷大廳或遊戲內，建議在房間大廳或等待開局時，按 `F2` 先行暫停改鍵。
+3. **為什麼快捷鍵修改後沒有生效？**
+   * 若直接手動修改 `HotkeysConfig.ini`，請記得在「快捷鍵說明」分頁點擊「🔄 重新載入設定」讓設定載入。
